@@ -1,0 +1,59 @@
+name: Create Development Environment
+author: Microsoft Corporation
+inputs:
+  shell:
+    description: Shell in which you want to run the action (powershell or pwsh)
+    required: false
+    default: powershell
+  actor:
+    description: The GitHub actor running the action
+    required: false
+    default: ${{ github.actor }}
+  token:
+    description: The GitHub token running the action
+    required: false
+    default: ${{ github.token }}
+  environmentName:
+    description: Name of the online environment
+    required: true
+  project:
+    description: Project name if the repository is setup for multiple projects
+    required: false
+    default: '.'
+  adminCenterApiCredentials:
+    description: Admin center API credentials
+    required: false
+    default: ''
+  reUseExistingEnvironment:
+    description: Reuse environment if it exists?
+    required: false
+    default: 'false'
+  updateBranch:
+    description: Set the branch to update
+    required: false
+    default: ${{ github.ref_name }}
+  directCommit:
+    description: Direct Commit?
+    required: false
+    default: 'false'
+runs:
+  using: composite
+  steps:
+    - name: run
+      shell: ${{ inputs.shell }}
+      env:
+        _actor: ${{ inputs.actor }}
+        _token: ${{ inputs.token }}
+        _environmentName: ${{ inputs.environmentName }}
+        _project: ${{ inputs.project }}
+        _adminCenterApiCredentials: ${{ inputs.adminCenterApiCredentials }}
+        _reUseExistingEnvironment: ${{ inputs.reUseExistingEnvironment }}
+        _updateBranch: ${{ inputs.updateBranch }}
+        _directCommit: ${{ inputs.directCommit }}
+      run: |
+        ${{ github.action_path }}/../Invoke-AlGoAction.ps1 -ActionName "CreateDevelopmentEnvironment" -Action {
+          ${{ github.action_path }}/CreateDevelopmentEnvironment.ps1 -actor $ENV:_actor -token $ENV:_token -environmentName $ENV:_environmentName -project $ENV:_project -adminCenterApiCredentials $ENV:_adminCenterApiCredentials -reUseExistingEnvironment ($ENV:_reUseExistingEnvironment -eq 'true') -updateBranch $ENV:_updateBranch -directCommit ($ENV:_directCommit -eq 'true')
+        }
+branding:
+  icon: terminal
+  color: blue

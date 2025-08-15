@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+defaults:
+  run:
+    shell: pwsh
+
+permissions:
+  contents: read
+
+jobs:
+  Test:
+    runs-on: [ ubuntu-latest ]
+    steps:
+      - name: Harden Runner
+        if: github.repository_owner == 'microsoft'
+        uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # v2.13.0
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+
+      - name: Run AL-Go Actions Tests
+        run: |
+          . (Join-Path "." "Tests/runtests.ps1") -Path "Tests"
+
+      - name: Test AL-Go Workflows
+        if: github.repository_owner == 'microsoft'
+        run: |
+          . (Join-Path "." "Tests/runtests.ps1") -Path "Tests/WorkflowSanitation"
+
+      - name: Test aka.ms links in markdown files
+        if: github.repository_owner == 'microsoft'
+        run: |
+          . (Join-Path "." "Tests/runtests.ps1") -Path "Tests/MarkdownLinks"

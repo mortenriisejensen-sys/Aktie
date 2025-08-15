@@ -1,0 +1,42 @@
+name: Scorecard Analysis
+on:
+  branch_protection_rule:
+  schedule:
+    - cron: "0 8 * * 4" # Weekly on Thursday at 08:00 UTC
+  push:
+    branches: ["main"]
+
+permissions: read-all
+
+jobs:
+  analysis:
+    name: Scorecard analysis
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write # Needed to upload the results to code-scanning dashboard.
+      id-token: write # Needed to publish results and get a badge (see publish_results below).
+
+    steps:
+      - name: Harden Runner
+        if: github.repository_owner == 'microsoft'
+        uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # v2.13.0
+        with:
+          egress-policy: audit
+
+      - name: "Checkout code"
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+        with:
+          persist-credentials: false
+
+      - name: "Run analysis"
+        uses: ossf/scorecard-action@05b42c624433fc40578a4040d5cf5e36ddca8cde # v2.4.2
+        with:
+          results_file: results.sarif
+          results_format: sarif
+          publish_results: true
+
+      # Upload the results to GitHub's code scanning dashboard.
+      - name: "Upload to code-scanning"
+        uses: github/codeql-action/upload-sarif@76621b61decf072c1cee8dd1ce2d2a82d33c17ed # v3.29.8
+        with:
+          sarif_file: results.sarif

@@ -1,0 +1,68 @@
+name: Calculate Artifact Names
+author: Microsoft Corporation
+inputs:
+  shell:
+    description: Shell in which you want to run the action (powershell or pwsh)
+    required: false
+    default: powershell
+  project:
+    description: Name of the built project
+    required: true
+  buildMode:
+    description: Build mode used when building the artifacts
+    required: true
+  suffix:
+    description: Suffix to add to the artifacts names
+    required: false
+    default: ''
+outputs:
+  AppsArtifactsName:
+    description: Artifacts name for Apps
+    value: ${{ steps.calculateartifactnames.outputs.AppsArtifactsName }}
+  PowerPlatformSolutionArtifactsName:
+    description: Artifacts name for PowerPlatform Solution
+    value: ${{ steps.calculateartifactnames.outputs.PowerPlatformSolutionArtifactsName }}
+  DependenciesArtifactsName:
+    description: Artifacts name for Dependencies
+    value: ${{ steps.calculateartifactnames.outputs.DependenciesArtifactsName }}
+  TestAppsArtifactsName:
+    description: Artifacts name for TestApps
+    value: ${{ steps.calculateartifactnames.outputs.TestAppsArtifactsName }}
+  TestResultsArtifactsName:
+    description: Artifacts name for TestResults
+    value: ${{ steps.calculateartifactnames.outputs.TestResultsArtifactsName }}
+  BcptTestResultsArtifactsName:
+    description: Artifacts name for BcptTestResults
+    value: ${{ steps.calculateartifactnames.outputs.BcptTestResultsArtifactsName }}
+  PageScriptingTestResultsArtifactsName:
+    description: Artifacts name for PageScriptingTestResults
+    value: ${{ steps.calculateartifactnames.outputs.PageScriptingTestResultsArtifactsName }}
+  PageScriptingTestResultDetailsArtifactsName:
+    description: Artifacts name for PageScriptingTestResultDetails
+    value: ${{ steps.calculateartifactnames.outputs.PageScriptingTestResultDetailsArtifactsName }}
+  BuildOutputArtifactsName:
+    description: Artifacts name for BuildOutput
+    value: ${{ steps.calculateartifactnames.outputs.BuildOutputArtifactsName }}
+  ContainerEventLogArtifactsName:
+    description: Artifacts name for ContainerEventLog
+    value: ${{ steps.calculateartifactnames.outputs.ContainerEventLogArtifactsName }}
+  BuildMode:
+    description: Build mode used when building the artifacts
+    value: ${{ steps.calculateartifactnames.outputs.BuildMode }}
+runs:
+  using: composite
+  steps:
+    - name: run
+      shell: ${{ inputs.shell }}
+      id: calculateartifactnames
+      env:
+        _project: ${{ inputs.project }}
+        _buildMode: ${{ inputs.buildMode }}
+        _suffix: ${{ inputs.suffix }}
+      run: |
+        ${{ github.action_path }}/../Invoke-AlGoAction.ps1 -ActionName "CalculateArtifactNames" -Action {
+          ${{ github.action_path }}/CalculateArtifactNames.ps1 -project $ENV:_project -buildMode $ENV:_buildMode -suffix $ENV:_suffix
+        }
+branding:
+  icon: terminal
+  color: blue

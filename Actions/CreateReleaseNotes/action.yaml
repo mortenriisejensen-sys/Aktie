@@ -1,0 +1,46 @@
+name: Create Release Notes
+author: Microsoft Corporation
+inputs:
+  shell:
+    description: Shell in which you want to run the action (powershell or pwsh)
+    required: false
+    default: powershell
+  token:
+    description: The GitHub token running the action
+    required: false
+    default: ${{ github.token }}
+  buildVersion:
+    description: Build version
+    required: true
+  tag_name:
+    description: Tag name
+    required: true
+  target_commitish:
+    description: Last commit to include in release notes
+    required: false
+    default: ''
+outputs:
+  ReleaseVersion:
+    description: The release version
+    value: ${{ steps.createreleasenotes.outputs.releaseVersion }}
+  ReleaseNotes:
+    description: Release note generated based on the changes
+    value: ${{ steps.createreleasenotes.outputs.ReleaseNotes }}
+runs:
+  using: composite
+  steps:
+    - name: run
+      shell: ${{ inputs.shell }}
+      id: createreleasenotes
+      env:
+        _token: ${{ inputs.token }}
+        _buildVersion: ${{ inputs.buildVersion }}
+        _tag_name: ${{ inputs.tag_name }}
+        _target_commitish: ${{ inputs.target_commitish }}
+      run: |
+        ${{ github.action_path }}/../Invoke-AlGoAction.ps1 -ActionName "CreateReleaseNotes" -Action {
+          ${{ github.action_path }}/CreateReleaseNotes.ps1 -token $ENV:_token -buildVersion $ENV:_buildVersion -tag_name $ENV:_tag_name -target_commitish $ENV:_target_commitish
+        }
+branding:
+  icon: terminal
+  color: blue

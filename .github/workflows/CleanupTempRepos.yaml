@@ -1,0 +1,63 @@
+name: Cleanup Temp Repos
+
+on:
+  workflow_dispatch:
+    inputs:
+      githubOwner:
+        description: GitHub organization set as owner for the temp repositories (default is to use your personal account)
+        required: false
+        default: ''
+    workflow_run:
+      workflows: [End to end tests]
+      types:
+        - completed
+
+defaults:
+  run:
+    shell: pwsh
+
+permissions:
+  contents: read
+
+jobs:
+  CleanupRepos:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }} # Run only if dispatched or the End to end tests workflow has succeeded
+    runs-on: [ ubuntu-latest ]
+    name: Cleanup Temp Repos
+    steps:
+      - name: Harden Runner
+        if: github.repository_owner == 'microsoft'
+        uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # v2.13.0
+        with:
+          egress-policy: audit
+
+      - name: Check E2E app is set up
+        run: |
+          if (('${{ vars.E2E_APP_ID }}' -eq '') -or ('${{ secrets.E2E_PRIVATE_KEY }}' -eq '')) {
+            Write-Host "::Error:: In order to clean up the temp repositories you must have a secret called E2E_PRIVATE_KEY and a variable called E2E_APP_ID defined in your repository."
+            exit 1
+          }
+
+      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+
+      - name: Get GitHub Owner
+        id: getGitHubOwner
+        env:
+          githubOwner: ${{ github.event.inputs.githubOwner }}
+        run: |
+          ${{ github.workspace }}/Internal/Scripts/GetOwnerForE2ETests.ps1 -githubOwner $env:githubOwner
+
+      - uses: actions/create-github-app-token@0f859bf9e69e887678d5bbfbee594437cb440ffe # v2.1.0
+        id: app-token
+        if: ${{ vars.E2E_APP_ID != '' }}
+        with:
+          app-id: ${{ vars.E2E_APP_ID }}
+          private-key: ${{ secrets.E2E_PRIVATE_KEY }}
+          owner: ${{ steps.getGitHubOwner.outputs.githubOwner }}
+
+      - name: Cleanup Temp Repositories
+        env:
+          githubOwner: ${{ steps.getGitHubOwner.outputs.githubOwner }}
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          ${{ github.workspace }}/Internal/Scripts/RemoveTempRepos.ps1 -githubOwner $env:githubOwner
