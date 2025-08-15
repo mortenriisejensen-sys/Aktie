@@ -1,0 +1,43 @@
+{
+  "id": "7d73322f-857a-4084-9804-06386877cd68",
+  "name": "MMS leg",
+  "publisher": "Default Publisher",
+  "version": "1.0.0.0",
+  "brief": "",
+  "description": "",
+  "privacyStatement": "",
+  "EULA": "",
+  "help": "",
+  "url": "",
+  "logo": "",
+  "dependencies": [
+    
+    {
+    "id": "ac762be1-e90f-4a72-b519-612a5e3ddc2e",	
+    "name": "OIOUBL",
+    "publisher": "Microsoft",
+    "version": "24.0.16410.18056"
+  }
+  ],
+  "screenshots": [],
+  "platform": "1.0.0.0",
+  "application": "26.0.0.0",
+  "idRanges": [
+    {
+      "from": 50100,
+      "to": 50149
+    }
+  ],
+  "resourceExposurePolicy": {
+    "allowDebugging": true,
+    "allowDownloadingSource": true,
+    "includeSourceInSymbolFile": true
+  },
+
+  
+  "runtime": "15.0",
+  "features": [
+    "NoImplicitWith"
+  ]
+   
+}
